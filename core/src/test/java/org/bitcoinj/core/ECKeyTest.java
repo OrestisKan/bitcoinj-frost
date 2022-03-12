@@ -46,6 +46,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
+import org.bitcoin.NativeSecp256k1;
 import static org.bitcoinj.core.Utils.HEX;
 import static org.bitcoinj.core.Utils.reverseBytes;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -122,18 +123,21 @@ public class ECKeyTest {
         // Now re-encode and decode the ASN.1 to see if it is equivalent (it does not produce the exact same byte
         // sequence, some integers are padded now).
         ECKey roundtripKey = ECKey.fromASN1(decodedKey.toASN1());
-
-        assertArrayEquals(decodedKey.getPrivKeyBytes(), roundtripKey.getPrivKeyBytes());
+        byte[] decodedKeyBytes = decodedKey.getPrivKeyBytes();
+        byte[] roundtripKeyPrivKeyBytes= roundtripKey.getPrivKeyBytes();
+        assertArrayEquals(decodedKeyBytes, roundtripKeyPrivKeyBytes);
 
         for (ECKey key : new ECKey[] {decodedKey, roundtripKey}) {
             byte[] message = reverseBytes(HEX.decode(
                     "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
             byte[] output = key.sign(Sha256Hash.wrap(message)).encodeToDER();
             assertTrue(key.verify(message, output));
+//            System.out.println(output);
 
-            output = HEX.decode(
+            byte[] output2 = HEX.decode(
                     "304502206faa2ebc614bf4a0b31f0ce4ed9012eb193302ec2bcaccc7ae8bb40577f47549022100c73a1a1acc209f3f860bf9b9f5e13e9433db6f8b7bd527a088a0e0cd0a4c83e9");
-            assertTrue(key.verify(message, output));
+//            System.out.println(output2);
+            assertTrue(key.verify(message, output2));
         }
         
         // Try to sign with one key and verify with the other.
@@ -532,5 +536,30 @@ public class ECKeyTest {
         final byte[] bytes = new byte[33];
         bytes[0] = 42;
         ECKey.fromPrivate(bytes);
+    }
+
+    @Test
+    public void testKeyCreationAndAggregation(){
+        final int numberOfKeys = 2;
+        List<byte[]> list = new ArrayList<>();
+        for(int i=0; i < numberOfKeys; i++){
+            System.out.println("Key "+ i + "\n");
+            byte[][] keys = NativeSecp256k1.generateKeyPair();
+            System.out.println(Arrays.toString(keys[2]));
+            System.out.println(Arrays.toString(keys[0]));
+            System.out.println(Arrays.toString(keys[1]));
+            list.add(keys[1]);
+            System.out.println();
+            System.out.println();
+        }
+
+        byte[][] arr = new byte[2][list.get(0).length];
+        arr[0] = list.get(0);
+        arr[1] = list.get(1);
+
+        byte[][] aggr = NativeSecp256k1.getAggregatedPublicKey(arr, numberOfKeys);
+        System.out.println(Arrays.toString(aggr[0]));
+//        System.out.println(aggr.length);
+        assertFalse(true);
     }
 }

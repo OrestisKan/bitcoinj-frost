@@ -472,6 +472,14 @@ public class NativeSecp256k1 {
         return retVal == 0 ? new byte[0] : sigArr;
     }
 
+    public static byte[][] generateKeyPair(){
+        return generate_key_pair(Secp256k1Context.getContext());
+    }
+
+    public static byte[][] getAggregatedPublicKey(byte[][] publicKeys , int totalNumberOfPublicKeys){
+        return get_combined_public_keys(publicKeys, totalNumberOfPublicKeys, Secp256k1Context.getContext());
+    }
+
     private static native long secp256k1_ctx_clone(long context);
 
     private static native int secp256k1_context_randomize(ByteBuffer byteBuff, long context);
@@ -499,4 +507,8 @@ public class NativeSecp256k1 {
     private static native byte[][] secp256k1_schnorr_sign(ByteBuffer byteBuff, long context);
 
     private static native byte[][] secp256k1_ecdh(ByteBuffer byteBuff, long context, int inputLen);
+
+    private static native byte[][] generate_key_pair(long context);
+
+    private static native byte[][] get_combined_public_keys(byte[][] publicKeys , int totalNumberOfPublicKeys, long context);
 }
