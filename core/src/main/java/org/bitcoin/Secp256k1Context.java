@@ -39,6 +39,7 @@ public class Secp256k1Context {
             contextRef = secp256k1_init_context();
         } catch (UnsatisfiedLinkError | SecurityException e) {
             log.debug(e.toString());
+		    System.out.println(e.toString());
             isEnabled = false;
         }
         enabled = isEnabled;

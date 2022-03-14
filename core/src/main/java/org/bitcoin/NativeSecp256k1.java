@@ -476,10 +476,16 @@ public class NativeSecp256k1 {
         return generate_key_pair(Secp256k1Context.getContext());
     }
 
-    public static byte[][] getAggregatedPublicKey(byte[][] publicKeys , int totalNumberOfPublicKeys){
-        return get_combined_public_keys(publicKeys, totalNumberOfPublicKeys, Secp256k1Context.getContext());
-    }
+  	public static byte[] getAggregatedPublicKey(byte[][] publicKeys , int totalNumberOfPublicKeys){
+		return get_combined_public_keys(publicKeys, totalNumberOfPublicKeys, Secp256k1Context.getContext());
+  	}
 
+	public static byte[][] sendFrost(byte[][] publicKeys, byte[] keyPair){
+	  return create_commitments(publicKeys, keyPair, Secp256k1Context.getContext());
+	}
+	public static byte[] receiveFrost(byte[][] shares, byte[][][] pubcoeff, int index){
+	  return receive_commitments(shares, pubcoeff, index, Secp256k1Context.getContext());
+	}
     private static native long secp256k1_ctx_clone(long context);
 
     private static native int secp256k1_context_randomize(ByteBuffer byteBuff, long context);
@@ -510,5 +516,9 @@ public class NativeSecp256k1 {
 
     private static native byte[][] generate_key_pair(long context);
 
-    private static native byte[][] get_combined_public_keys(byte[][] publicKeys , int totalNumberOfPublicKeys, long context);
+    private static native byte[] get_combined_public_keys(byte[][] publicKeys, int totalNumberOfPublicKeys, long context);
+
+	private static native byte[][] create_commitments(byte[][] publicKeys, byte[] keyPair, long context);
+
+  	private static native byte[] receive_commitments(byte[][] shares, byte[][][] pubcoeff, int index, long context);
 }

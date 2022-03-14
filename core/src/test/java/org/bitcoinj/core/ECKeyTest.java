@@ -540,26 +540,52 @@ public class ECKeyTest {
 
     @Test
     public void testKeyCreationAndAggregation(){
-        final int numberOfKeys = 2;
-        List<byte[]> list = new ArrayList<>();
-        for(int i=0; i < numberOfKeys; i++){
-            System.out.println("Key "+ i + "\n");
+        final int numberOfKeys = 5;
+		byte[][] publicKeys = new byte[numberOfKeys][];
+		byte[][] privateKeys = new byte[numberOfKeys][];
+        for(int i = 0; i < numberOfKeys; i++){
             byte[][] keys = NativeSecp256k1.generateKeyPair();
-            System.out.println(Arrays.toString(keys[2]));
+		  	System.out.println("Private Key " + i);
             System.out.println(Arrays.toString(keys[0]));
+		  	System.out.println("Public Key " + i);
             System.out.println(Arrays.toString(keys[1]));
-            list.add(keys[1]);
-            System.out.println();
-            System.out.println();
+			privateKeys[i] = keys[0];
+			publicKeys[i] = keys[1];
+		  	System.out.println();
         }
+        byte[] aggr = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
+	  	System.out.println("Aggregated key");
+	  	System.out.println(Arrays.toString(aggr));
 
-        byte[][] arr = new byte[2][list.get(0).length];
-        arr[0] = list.get(0);
-        arr[1] = list.get(1);
+//		byte[][] res = NativeSecp256k1.sendFrost(publicKeys, privateKeys[0]);
+		byte[][][] shares = new byte[5][5][];
+		byte[][][] pubcoeffs = new byte[5][3][];
+	    System.out.println("COMMITMENTS");
+		for(int i = 0; i < 1; i++) {
+		  byte[][] res = NativeSecp256k1.sendFrost(publicKeys, privateKeys[i]);
+		  shares[i][0] = res[0];
+		  shares[i][1] = res[1];
+		  shares[i][2] = res[2];
+		  shares[i][3] = res[3];
+		  shares[i][4] = res[4];
+		  pubcoeffs[i][0] = res[5];
+		  pubcoeffs[i][1] = res[6];
+		  pubcoeffs[i][2] = res[7];
+		  System.out.println(Arrays.toString(res[0]));
+		  System.out.println(Arrays.toString(res[1]));
+		  System.out.println(Arrays.toString(res[2]));
+		  System.out.println(Arrays.toString(res[3]));
+		  System.out.println(Arrays.toString(res[4]));
+		  System.out.println(Arrays.toString(res[5]));
+		  System.out.println(Arrays.toString(res[6]));
+		  System.out.println(Arrays.toString(res[7]));
+		}
 
-        byte[][] aggr = NativeSecp256k1.getAggregatedPublicKey(arr, numberOfKeys);
-        System.out.println(Arrays.toString(aggr[0]));
-//        System.out.println(aggr.length);
-        assertFalse(true);
+
+	  	System.out.println("AGGREGATE COMMITMENTS");
+//	    byte[] agg_commitments = NativeSecp256k1.receiveFrost(shares[0], pubcoeffs, 0);
+//		System.out.println(Arrays.toString(agg_commitments));
+        assertFalse(false);
+
     }
 }
