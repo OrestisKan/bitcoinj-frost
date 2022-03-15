@@ -476,15 +476,26 @@ public class NativeSecp256k1 {
         return generate_key_pair(Secp256k1Context.getContext());
     }
 
+	public static void generateKey(FrostSecret secret, FrostSigner signer){
+	   generate_key(secret, signer, Secp256k1Context.getContext());
+	}
+
   	public static byte[] getAggregatedPublicKey(byte[][] publicKeys , int totalNumberOfPublicKeys){
 		return get_combined_public_keys(publicKeys, totalNumberOfPublicKeys, Secp256k1Context.getContext());
   	}
 
 	public static byte[][] sendFrost(byte[][] publicKeys, byte[] keyPair){
 	  return create_commitments(publicKeys, keyPair, Secp256k1Context.getContext());
+
 	}
-	public static byte[] receiveFrost(byte[][] shares, byte[][][] pubcoeff, int index){
-	  return receive_commitments(shares, pubcoeff, index, Secp256k1Context.getContext());
+
+	public static byte[][] sendShares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer){
+	  return send_shares(publicKeys, secret, signer, Secp256k1Context.getContext());
+
+	}
+
+	public static void receiveFrost(byte[][] shares, FrostSecret secret, FrostSigner[] signer, int index){
+	  receive_commitments(shares, secret, signer, index, Secp256k1Context.getContext());
 	}
     private static native long secp256k1_ctx_clone(long context);
 
@@ -498,7 +509,7 @@ public class NativeSecp256k1 {
 
     private static native byte[][] secp256k1_pubkey_tweak_mul(ByteBuffer byteBuff, long context, int pubLen);
 
-    private static native void secp256k1_destroy_context(long context);
+      private static native void secp256k1_destroy_context(long context);
 
     private static native int secp256k1_ecdsa_verify(ByteBuffer byteBuff, long context, int sigLen, int pubLen);
 
@@ -516,9 +527,14 @@ public class NativeSecp256k1 {
 
     private static native byte[][] generate_key_pair(long context);
 
+    private static native void generate_key(FrostSecret secret, FrostSigner signer, long context);
+
     private static native byte[] get_combined_public_keys(byte[][] publicKeys, int totalNumberOfPublicKeys, long context);
 
 	private static native byte[][] create_commitments(byte[][] publicKeys, byte[] keyPair, long context);
 
-  	private static native byte[] receive_commitments(byte[][] shares, byte[][][] pubcoeff, int index, long context);
+  	private static native byte[][] send_shares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer, long context);
+
+  	private static native void receive_commitments(byte[][] shares, FrostSecret secret, FrostSigner[] signerS, int index, long context);
+//	  private static native void bla (byte[][][] by);
 }

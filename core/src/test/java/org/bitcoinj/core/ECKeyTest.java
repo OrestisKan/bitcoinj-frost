@@ -17,6 +17,9 @@
 
 package org.bitcoinj.core;
 
+import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
+import org.bitcoin.FrostSecret;
+import org.bitcoin.FrostSigner;
 import org.bitcoinj.core.ECKey.ECDSASignature;
 import org.bitcoinj.crypto.EncryptedData;
 import org.bitcoinj.crypto.KeyCrypter;
@@ -63,8 +66,9 @@ public class ECKeyTest {
     private static final NetworkParameters TESTNET = TestNet3Params.get();
     private static final NetworkParameters MAINNET = MainNetParams.get();
     private static final NetworkParameters UNITTEST = UnitTestParams.get();
+  private FrostSecret sec;
 
-    @Before
+  @Before
     public void setUp() throws Exception {
         keyCrypter = new KeyCrypterScrypt(SCRYPT_ITERATIONS);
     }
@@ -542,49 +546,66 @@ public class ECKeyTest {
     public void testKeyCreationAndAggregation(){
         final int numberOfKeys = 5;
 		byte[][] publicKeys = new byte[numberOfKeys][];
-		byte[][] privateKeys = new byte[numberOfKeys][];
-        for(int i = 0; i < numberOfKeys; i++){
-            byte[][] keys = NativeSecp256k1.generateKeyPair();
-		  	System.out.println("Private Key " + i);
-            System.out.println(Arrays.toString(keys[0]));
-		  	System.out.println("Public Key " + i);
-            System.out.println(Arrays.toString(keys[1]));
-			privateKeys[i] = keys[0];
-			publicKeys[i] = keys[1];
-		  	System.out.println();
-        }
-        byte[] aggr = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
-	  	System.out.println("Aggregated key");
-	  	System.out.println(Arrays.toString(aggr));
+//		byte[][] privateKeys = new byte[numberOfKeys][];
 
-//		byte[][] res = NativeSecp256k1.sendFrost(publicKeys, privateKeys[0]);
-		byte[][][] shares = new byte[5][5][];
-		byte[][][] pubcoeffs = new byte[5][3][];
-	    System.out.println("COMMITMENTS");
-		for(int i = 0; i < 1; i++) {
-		  byte[][] res = NativeSecp256k1.sendFrost(publicKeys, privateKeys[i]);
+//        for(int i = 0; i < numberOfKeys; i++){
+//		 	FrostSigner sig = new FrostSigner(3);
+//		  	FrostSecret sec;
+//            byte[][] keys = NativeSecp256k1.generateKeyPair();
+//		  	System.out.println("Private Key " + i);
+//            System.out.println(Arrays.toString(keys[0]));
+//		  	System.out.println("Public Key " + i);
+//            System.out.println(Arrays.toString(keys[1]));
+//			privateKeys[i] = keys[0];
+//			publicKeys[i] = keys[1];
+//		  	System.out.println("............");
+//        }
+
+		FrostSigner[] signers = new FrostSigner[numberOfKeys];
+	  	FrostSecret[] secrets = new FrostSecret[numberOfKeys];
+		for(int i = 0; i < numberOfKeys; i++) {
+		  signers[i] =  new FrostSigner(3);
+		  secrets[i] = new FrostSecret();
+		}
+
+		for(int i = 0; i < numberOfKeys; i++){
+		  FrostSigner sig = signers[i];
+		  FrostSecret sec = secrets[i];
+		  NativeSecp256k1.generateKey(sec, sig);
+		  System.out.println("-------Private Key " + i);
+		  System.out.println(Arrays.toString(sec.keypair));
+		  System.out.println("Public Key " + i);
+		  System.out.println(Arrays.toString(sig.pubkey));
+		  publicKeys[i] = sig.pubkey;
+		  System.out.println();
+		}
+//        byte[] aggr = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
+//	  	System.out.println("Aggregated key");
+//	  	System.out.println(Arrays.toString(aggr));
+
+	    byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
+		byte[][][] pubcoeffs = new byte[numberOfKeys][3][];
+	    System.out.println("COMMITMENTS-----");
+		for(int i = 0; i < numberOfKeys; i++) {
+		  byte[][] res = NativeSecp256k1.sendShares(publicKeys, secrets[i], signers[i]);
+		  pubcoeffs[i] = signers[i].pubcoeff;
 		  shares[i][0] = res[0];
 		  shares[i][1] = res[1];
 		  shares[i][2] = res[2];
 		  shares[i][3] = res[3];
 		  shares[i][4] = res[4];
-		  pubcoeffs[i][0] = res[5];
-		  pubcoeffs[i][1] = res[6];
-		  pubcoeffs[i][2] = res[7];
+		  System.out.println(i + "-----------");
 		  System.out.println(Arrays.toString(res[0]));
 		  System.out.println(Arrays.toString(res[1]));
 		  System.out.println(Arrays.toString(res[2]));
 		  System.out.println(Arrays.toString(res[3]));
 		  System.out.println(Arrays.toString(res[4]));
-		  System.out.println(Arrays.toString(res[5]));
-		  System.out.println(Arrays.toString(res[6]));
-		  System.out.println(Arrays.toString(res[7]));
 		}
-
-
+//
+//
 	  	System.out.println("AGGREGATE COMMITMENTS");
-//	    byte[] agg_commitments = NativeSecp256k1.receiveFrost(shares[0], pubcoeffs, 0);
-//		System.out.println(Arrays.toString(agg_commitments));
+	    NativeSecp256k1.receiveFrost(shares[0], secrets[0], signers, 0);
+		System.out.println(Arrays.toString(secrets[0].agg_share));
         assertFalse(false);
 
     }
