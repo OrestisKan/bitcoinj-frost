@@ -543,9 +543,9 @@ public class ECKeyTest {
     }
 
     @Test
-    public void testKeyCreationAndAggregation(){
-        final int numberOfKeys = 5;
-		byte[][] publicKeys = new byte[numberOfKeys][];
+    public void testKeyCreationAndAggregation() {
+	  final int numberOfKeys = 5;
+	  byte[][] publicKeys = new byte[numberOfKeys][];
 //		byte[][] privateKeys = new byte[numberOfKeys][];
 
 //        for(int i = 0; i < numberOfKeys; i++){
@@ -561,52 +561,59 @@ public class ECKeyTest {
 //		  	System.out.println("............");
 //        }
 
-		FrostSigner[] signers = new FrostSigner[numberOfKeys];
-	  	FrostSecret[] secrets = new FrostSecret[numberOfKeys];
-		for(int i = 0; i < numberOfKeys; i++) {
-		  signers[i] =  new FrostSigner(3);
-		  secrets[i] = new FrostSecret();
-		}
+	  FrostSigner[] signers = new FrostSigner[numberOfKeys];
+	  FrostSecret[] secrets = new FrostSecret[numberOfKeys];
+	  for (int i = 0; i < numberOfKeys; i++) {
+		signers[i] = new FrostSigner(3);
+		secrets[i] = new FrostSecret();
+	  }
 
-		for(int i = 0; i < numberOfKeys; i++){
-		  FrostSigner sig = signers[i];
-		  FrostSecret sec = secrets[i];
-		  NativeSecp256k1.generateKey(sec, sig);
-		  System.out.println("-------Private Key " + i);
-		  System.out.println(Arrays.toString(sec.keypair));
-		  System.out.println("Public Key " + i);
-		  System.out.println(Arrays.toString(sig.pubkey));
-		  publicKeys[i] = sig.pubkey;
-		  System.out.println();
-		}
-//        byte[] aggr = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
-//	  	System.out.println("Aggregated key");
-//	  	System.out.println(Arrays.toString(aggr));
+	  for (int i = 0; i < numberOfKeys; i++) {
+		FrostSigner sig = signers[i];
+		FrostSecret sec = secrets[i];
+		NativeSecp256k1.generateKey(sec, sig);
+		System.out.println("-------Private Key " + i);
+		prnt(sec.keypair);
+		System.out.println("Public Key " + i);
+		prnt(sig.pubkey);
+		publicKeys[i] = sig.pubkey;
+		System.out.println();
+	  }
+	  byte[] aggr = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
+	  System.out.println("Aggregated key");
+	  prnt(aggr);
+	  System.out.println("ok");
 
-	    byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
-		byte[][][] pubcoeffs = new byte[numberOfKeys][3][];
-	    System.out.println("COMMITMENTS-----");
-		for(int i = 0; i < numberOfKeys; i++) {
-		  byte[][] res = NativeSecp256k1.sendShares(publicKeys, secrets[i], signers[i]);
-		  pubcoeffs[i] = signers[i].pubcoeff;
-		  shares[i][0] = res[0];
-		  shares[i][1] = res[1];
-		  shares[i][2] = res[2];
-		  shares[i][3] = res[3];
-		  shares[i][4] = res[4];
-		  System.out.println(i + "-----------");
-		  System.out.println(Arrays.toString(res[0]));
-		  System.out.println(Arrays.toString(res[1]));
-		  System.out.println(Arrays.toString(res[2]));
-		  System.out.println(Arrays.toString(res[3]));
-		  System.out.println(Arrays.toString(res[4]));
+	  byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
+	  byte[][][] pubcoeffs = new byte[numberOfKeys][3][];
+	  System.out.println("COMMITMENTS-----");
+	  for (int i = 0; i < numberOfKeys; i++) {
+		byte[][] res = NativeSecp256k1.sendShares(publicKeys, secrets[i], signers[i]);
+		pubcoeffs[i] = signers[i].pubcoeff;
+		shares[0][i] = res[0];
+		shares[1][i] = res[1];
+		shares[2][i] = res[2];
+		shares[3][i] = res[3];
+		shares[4][i] = res[4];
+		System.out.println(i + "-----------");
+		for (int j = 0; j < 5; j++) {
+		  prnt(res[j]);
 		}
-//
-//
-	  	System.out.println("AGGREGATE COMMITMENTS");
-	    NativeSecp256k1.receiveFrost(shares[0], secrets[0], signers, 0);
-		System.out.println(Arrays.toString(secrets[0].agg_share));
-        assertFalse(false);
+	  }
 
-    }
+	  System.out.println("AGGREGATE COMMITMENTS");
+	  for (int i = 0; i < numberOfKeys; i++) {
+		NativeSecp256k1.receiveFrost(shares[i], secrets[i], signers, i);
+		prnt(secrets[i].agg_share);
+	  }
+	  System.out.println("JAVA DONE");
+	  assertFalse(false);
+
+	}
+	void prnt(byte[] arr) {
+		for (byte b : arr){
+			System.out.print(String.format("%02x", b) + ", ");
+		}
+		System.out.println();
+	}
 }
