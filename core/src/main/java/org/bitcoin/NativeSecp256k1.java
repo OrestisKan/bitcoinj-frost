@@ -484,15 +484,41 @@ public class NativeSecp256k1 {
 		return get_combined_public_keys(publicKeys, totalNumberOfPublicKeys, Secp256k1Context.getContext());
   	}
 
-	public static byte[][] sendFrost(byte[][] publicKeys, byte[] keyPair){
-	  return create_commitments(publicKeys, keyPair, Secp256k1Context.getContext());
-
+  	public static void send_vss_signatures(FrostSecret secret, FrostSigner[] signers, FrostSession session, FrostCache cache, int index){
+	  send_vss_sign(secret, signers, session, cache, index, Secp256k1Context.getContext());
+	}
+	public static void receive_vss_signatures(FrostSigner signer, FrostSession session, FrostCache cache){
+	  receive_vss_sign(signer, session, cache, Secp256k1Context.getContext());
 	}
 
-	public static byte[][] sendShares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer){
-	  return send_shares(publicKeys, secret, signer, Secp256k1Context.getContext());
+  	public static byte[] aggregate_vss_signatures(FrostSigner[] signers, FrostSession session){
+	  return aggregate_vss_sign(signers, session, Secp256k1Context.getContext());
+   }
 
-	}
+  public static byte[][] sendShares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer){
+	return send_shares(publicKeys, secret, signer, Secp256k1Context.getContext());
+
+  }
+  public static boolean verifyVSS(byte[] signature, FrostSigner aggr_signer, byte[] aggr_key){
+	return verify_vss_sign(signature, aggr_signer, aggr_key, Secp256k1Context.getContext());
+
+  }
+
+
+  public static byte[] sign1j(FrostSecret secret, FrostSigner signer, byte[] msg, byte[] sig, FrostSession session, FrostCache cache) {
+	  return sign_message_first(secret, signer, msg, sig, session, cache, Secp256k1Context.getContext());
+  }
+  public static void sign2j(int[] participants, FrostSecret secret, FrostSigner[] signers, byte[] msg, FrostSession session, FrostCache cache, int index) {
+	sign_message_second(participants, secret, signers, msg, session, cache, index, Secp256k1Context.getContext());
+  }
+  public static byte[] sign3j(byte[] sig, FrostSigner[] signers, FrostSession session) {
+	return sign_message_third(sig, signers, session, Secp256k1Context.getContext());
+  }
+
+  public static boolean frostVerify(byte[] sig, byte[] msg, byte[] key) {
+	return verify_frost(sig, msg, key, Secp256k1Context.getContext());
+  }
+
 
 	public static void receiveFrost(byte[][] shares, FrostSecret secret, FrostSigner[] signer, int index){
 	  receive_commitments(shares, secret, signer, index, Secp256k1Context.getContext());
@@ -536,5 +562,17 @@ public class NativeSecp256k1 {
   	private static native byte[][] send_shares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer, long context);
 
   	private static native void receive_commitments(byte[][] shares, FrostSecret secret, FrostSigner[] signerS, int index, long context);
-//	  private static native void bla (byte[][][] by);
+
+    private static native void send_vss_sign(FrostSecret secret, FrostSigner[] signerS, FrostSession session, FrostCache cache, int index, long context);
+
+	private static native void receive_vss_sign(FrostSigner signer, FrostSession session, FrostCache cache, long context);
+
+    private static native byte[] aggregate_vss_sign(FrostSigner[] signerS, FrostSession session, long context);
+
+	private static native boolean verify_vss_sign(byte[] signature, FrostSigner aggr_signer, byte[] aggr_key, long context);
+
+	private static native byte[] sign_message_first(FrostSecret secret, FrostSigner signer, byte[] msg, byte[] sig, FrostSession session, FrostCache cache, long context);
+	private static native void sign_message_second(int[] participants, FrostSecret secret, FrostSigner[] signers, byte[] msg, FrostSession session, FrostCache cache, int index, long context);
+	private static native byte[] sign_message_third(byte[] sig, FrostSigner[] signers, FrostSession session, long context);
+	private static native boolean verify_frost(byte[] sig, byte[] msg, byte[] key, long ctx_l);
 }

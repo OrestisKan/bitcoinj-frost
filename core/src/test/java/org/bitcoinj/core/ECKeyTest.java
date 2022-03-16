@@ -18,7 +18,10 @@
 package org.bitcoinj.core;
 
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
+import java.nio.charset.StandardCharsets;
+import org.bitcoin.FrostCache;
 import org.bitcoin.FrostSecret;
+import org.bitcoin.FrostSession;
 import org.bitcoin.FrostSigner;
 import org.bitcoinj.core.ECKey.ECDSASignature;
 import org.bitcoinj.crypto.EncryptedData;
@@ -545,6 +548,7 @@ public class ECKeyTest {
     @Test
     public void testKeyCreationAndAggregation() {
 	  final int numberOfKeys = 5;
+	  int threshold = 3;
 	  byte[][] publicKeys = new byte[numberOfKeys][];
 //		byte[][] privateKeys = new byte[numberOfKeys][];
 
@@ -579,9 +583,9 @@ public class ECKeyTest {
 		publicKeys[i] = sig.pubkey;
 		System.out.println();
 	  }
-	  byte[] aggr = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
+	  byte[] aggregated_public_key = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
 	  System.out.println("Aggregated key");
-	  prnt(aggr);
+	  prnt(aggregated_public_key);
 	  System.out.println("ok");
 
 	  byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
@@ -606,8 +610,49 @@ public class ECKeyTest {
 		NativeSecp256k1.receiveFrost(shares[i], secrets[i], signers, i);
 		prnt(secrets[i].agg_share);
 	  }
+	  FrostCache cache = new FrostCache();
+	  FrostSession session = new FrostSession();
+	  System.out.println("Send vss shares....");
+	  for (int i = 0; i < numberOfKeys; i++) {
+		NativeSecp256k1.send_vss_signatures(secrets[i], signers, session, cache, i);
+	  }
+	  System.out.println("Receive vss shares....");
+	  for (int i = 0; i < numberOfKeys; i++) {
+		NativeSecp256k1.receive_vss_signatures(signers[i], session, cache);
+	  }
+	  System.out.println("Aggregate vss shares:");
+	  byte[] aggregate_vss_signatures = NativeSecp256k1.aggregate_vss_signatures(signers, session);
+	  prnt(aggregate_vss_signatures);
+
+	  boolean ok = NativeSecp256k1.verifyVSS(aggregate_vss_signatures, signers[0], aggregated_public_key);
+	  System.out.println("VERIFICATION IS " + ok);
+
+	  System.out.println("Signing with Frost....");
+	  cache = new FrostCache();
+	  session = new FrostSession();
+	  String mess = "this_could_be_the_hash_of_a_msg!";
+
+	  System.out.println("Doing partial sign....");
+	  byte[] msg = mess.getBytes(StandardCharsets.UTF_8);
+	  for (int i = 0; i < numberOfKeys; i++) {
+		NativeSecp256k1.sign1j(secrets[i], signers[i], msg, aggregate_vss_signatures, session, cache);
+	  }
+
+	  System.out.println("Broadcasting partial signs...");
+	  for (int i = 0; i < threshold; i++) {
+		NativeSecp256k1.sign2j(new int[]{1, 2, 3}, secrets[i], signers, msg, session, cache, i);
+	  }
+
+	  System.out.println("SA aggregating signatures....");
+	  byte[] frostSig = NativeSecp256k1.sign3j(aggregate_vss_signatures, signers, session);
+	  prnt(frostSig);
+
+	  prnt(frostSig);
+
+	  boolean good = NativeSecp256k1.frostVerify(frostSig, msg, aggregated_public_key);
+	  System.out.println("####### VERIFY: " + good);
 	  System.out.println("JAVA DONE");
-	  assertFalse(false);
+	  assertTrue(good);
 
 	}
 	void prnt(byte[] arr) {
