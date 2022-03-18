@@ -17,8 +17,8 @@
 
 package org.bitcoinj.core;
 
-import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import java.nio.charset.StandardCharsets;
+
 import org.bitcoin.FrostCache;
 import org.bitcoin.FrostSecret;
 import org.bitcoin.FrostSession;
@@ -53,6 +53,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 import org.bitcoin.NativeSecp256k1;
+
 import static org.bitcoinj.core.Utils.HEX;
 import static org.bitcoinj.core.Utils.reverseBytes;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -69,9 +70,9 @@ public class ECKeyTest {
     private static final NetworkParameters TESTNET = TestNet3Params.get();
     private static final NetworkParameters MAINNET = MainNetParams.get();
     private static final NetworkParameters UNITTEST = UnitTestParams.get();
-  private FrostSecret sec;
+    private FrostSecret sec;
 
-  @Before
+    @Before
     public void setUp() throws Exception {
         keyCrypter = new KeyCrypterScrypt(SCRYPT_ITERATIONS);
     }
@@ -131,10 +132,10 @@ public class ECKeyTest {
         // sequence, some integers are padded now).
         ECKey roundtripKey = ECKey.fromASN1(decodedKey.toASN1());
         byte[] decodedKeyBytes = decodedKey.getPrivKeyBytes();
-        byte[] roundtripKeyPrivKeyBytes= roundtripKey.getPrivKeyBytes();
+        byte[] roundtripKeyPrivKeyBytes = roundtripKey.getPrivKeyBytes();
         assertArrayEquals(decodedKeyBytes, roundtripKeyPrivKeyBytes);
 
-        for (ECKey key : new ECKey[] {decodedKey, roundtripKey}) {
+        for (ECKey key : new ECKey[]{decodedKey, roundtripKey}) {
             byte[] message = reverseBytes(HEX.decode(
                     "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
             byte[] output = key.sign(Sha256Hash.wrap(message)).encodeToDER();
@@ -146,10 +147,10 @@ public class ECKeyTest {
 //            System.out.println(output2);
             assertTrue(key.verify(message, output2));
         }
-        
+
         // Try to sign with one key and verify with the other.
         byte[] message = reverseBytes(HEX.decode(
-            "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
+                "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
         assertTrue(roundtripKey.verify(message, decodedKey.sign(Sha256Hash.wrap(message)).encodeToDER()));
         assertTrue(decodedKey.verify(message, roundtripKey.sign(Sha256Hash.wrap(message)).encodeToDER()));
     }
@@ -163,9 +164,9 @@ public class ECKeyTest {
         // Now re-encode and decode the ASN.1 to see if it is equivalent (it does not produce the exact same byte
         // sequence, some integers are padded now).
         ECKey roundtripKey =
-            ECKey.fromPrivateAndPrecalculatedPublic(decodedKey.getPrivKey(), decodedKey.getPubKeyPoint(), decodedKey.isCompressed());
+                ECKey.fromPrivateAndPrecalculatedPublic(decodedKey.getPrivKey(), decodedKey.getPubKeyPoint(), decodedKey.isCompressed());
 
-        for (ECKey key : new ECKey[] {decodedKey, roundtripKey}) {
+        for (ECKey key : new ECKey[]{decodedKey, roundtripKey}) {
             byte[] message = reverseBytes(HEX.decode(
                     "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
             byte[] output = key.sign(Sha256Hash.wrap(message)).encodeToDER();
@@ -175,10 +176,10 @@ public class ECKeyTest {
                     "304502206faa2ebc614bf4a0b31f0ce4ed9012eb193302ec2bcaccc7ae8bb40577f47549022100c73a1a1acc209f3f860bf9b9f5e13e9433db6f8b7bd527a088a0e0cd0a4c83e9");
             assertTrue(key.verify(message, output));
         }
-        
+
         // Try to sign with one key and verify with the other.
         byte[] message = reverseBytes(HEX.decode(
-            "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
+                "11da3761e86431e4a54c176789e41f1651b324d240d599a7067bee23d328ec2a"));
         assertTrue(roundtripKey.verify(message, decodedKey.sign(Sha256Hash.wrap(message)).encodeToDER()));
         assertTrue(decodedKey.verify(message, roundtripKey.sign(Sha256Hash.wrap(message)).encodeToDER()));
 
@@ -208,7 +209,7 @@ public class ECKeyTest {
     @Test
     public void base58Encoding_stress() throws Exception {
         // Replace the loop bound with 1000 to get some keys with leading zero byte
-        for (int i = 0 ; i < 20 ; i++) {
+        for (int i = 0; i < 20; i++) {
             ECKey key = new ECKey();
             ECKey key1 = DumpedPrivateKey.fromBase58(TESTNET,
                     key.getPrivateKeyEncoded(TESTNET).toString()).getKey();
@@ -389,7 +390,7 @@ public class ECKeyTest {
     @Test
     public void keyRecoveryWithEncryptedKey() throws Exception {
         ECKey unencryptedKey = new ECKey();
-        KeyParameter aesKey =  keyCrypter.deriveKey(PASSWORD1);
+        KeyParameter aesKey = keyCrypter.deriveKey(PASSWORD1);
         ECKey encryptedKey = unencryptedKey.encrypt(keyCrypter, aesKey);
 
         String message = "Goodbye Jupiter!";
@@ -448,7 +449,7 @@ public class ECKeyTest {
             StringBuilder sig = new StringBuilder();
             int c;
             while (in.available() > 0 && (c = in.read()) != '"')
-                sig.append((char)c);
+                sig.append((char) c);
 
             assertTrue(TransactionSignature.isEncodingCanonical(HEX.decode(sig.toString())));
         }
@@ -469,7 +470,7 @@ public class ECKeyTest {
             StringBuilder sig = new StringBuilder();
             int c;
             while (in.available() > 0 && (c = in.read()) != '"')
-                sig.append((char)c);
+                sig.append((char) c);
 
             try {
                 final String sigStr = sig.toString();
@@ -547,101 +548,65 @@ public class ECKeyTest {
 
     @Test
     public void testKeyCreationAndAggregation() {
-	  final int numberOfKeys = 5;
-	  int threshold = 3;
-	  byte[][] publicKeys = new byte[numberOfKeys][];
+        final int numberOfKeys = 5;
+        int threshold = 3;
+        String mess = "this_could_be_the_hash_of_a_msg!";
+        byte[] msg = mess.getBytes(StandardCharsets.UTF_8);
+        int[] participantIndices = new int[]{1, 2, 3};
+        int aggregatorIndex = 0;
 
-	  FrostSigner[] signers = new FrostSigner[numberOfKeys];
-	  FrostSecret[] secrets = new FrostSecret[numberOfKeys];
-	  for (int i = 0; i < numberOfKeys; i++) {
-		signers[i] = new FrostSigner(3);
-		secrets[i] = new FrostSecret();
-	  }
+        FrostCache cache = new FrostCache();
+        FrostSession session = new FrostSession();
+        FrostSigner[] signers = new FrostSigner[numberOfKeys];
+        FrostSecret[] secrets = new FrostSecret[numberOfKeys];
 
-	  byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
-	  for (int i = 0; i < numberOfKeys; i++) {
-		FrostSigner sig = signers[i];
-		FrostSecret sec = secrets[i];
-		NativeSecp256k1.generateKey(sec, sig);
-		System.out.println("-------Private Key " + i);
-		prnt(sec.keypair);
-		System.out.println("Public Key " + i);
-		prnt(sig.pubkey);
-		publicKeys[i] = sig.pubkey;
-		System.out.println();
-	  }
-	  System.out.println("ok");
+        for (int i = 0; i < numberOfKeys; i++) {
+            signers[i] = new FrostSigner(3);
+            secrets[i] = new FrostSecret();
+        }
 
-	  System.out.println("COMMITMENTS-----");
-	  for (int i = 0; i < numberOfKeys; i++) {
-		byte[][] res = NativeSecp256k1.sendShares(publicKeys, secrets[i], signers[i]);
-		shares[0][i] = res[0];
-		shares[1][i] = res[1];
-		shares[2][i] = res[2];
-		shares[3][i] = res[3];
-		shares[4][i] = res[4];
-		System.out.println(i + "-----------");
-		for (int j = 0; j < 5; j++) {
-		  prnt(res[j]);
-		}
-	  }
+        for (int i = 0; i < numberOfKeys; i++) {
+            FrostSigner sig = signers[i];
+            FrostSecret sec = secrets[i];
+            NativeSecp256k1.generateKey(sec, sig);
+        }
 
-	  System.out.println("AGGREGATE COMMITMENTS");
-	  FrostCache cache = new FrostCache();
-	  FrostSession session = new FrostSession();
-	  System.out.println("Send vss shares....");
-	  for (int i = 0; i < numberOfKeys; i++) {
-		// todo combine these 2
-		NativeSecp256k1.receiveFrost(shares[i], secrets[i], signers, i);
-		NativeSecp256k1.send_vss_signatures(secrets[i], signers, session, cache, i);
-	  }
+        for (int i = 0; i < numberOfKeys; i++) {
+            NativeSecp256k1.keyGenRound1Send(signers, secrets[i], signers[i]);
+        }
 
-	  System.out.println("Receive vss shares....");
-	  for (int i = 0; i < numberOfKeys; i++) {
-		NativeSecp256k1.receive_vss_signatures(signers[i], session, cache);
-	  }
-	  System.out.println("Aggregate vss shares:");
+        for (int i = 0; i < numberOfKeys; i++) {
+            NativeSecp256k1.keyGenRound1Receive(signers, secrets[i], i);
+            NativeSecp256k1.keyGenRound2Send(secrets[i], signers, session, cache, i);
+        }
 
-	  // todo combine these 3
-	  byte[] aggregate_vss_signatures = NativeSecp256k1.aggregate_vss_signatures(signers, session);
-	  byte[] aggregated_public_key = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
-	  boolean ok = NativeSecp256k1.verifyVSS(aggregate_vss_signatures, signers[0], aggregated_public_key);
+        for (int i = 0; i < numberOfKeys; i++) {
+            NativeSecp256k1.keyGenRound2Receive(signers[i], session, cache);
+        }
 
-	  System.out.println("VERIFICATION IS " + ok);
+        cache = new FrostCache();
+        session = new FrostSession();
 
-	  System.out.println("Signing with Frost....");
-	  cache = new FrostCache();
-	  session = new FrostSession();
-	  String mess = "this_could_be_the_hash_of_a_msg!";
+        for (int i = 0; i < numberOfKeys; i++) {
+            NativeSecp256k1.signRound1Send(signers, secrets[i], msg, session, cache, i);
+        }
 
-	  System.out.println("Doing partial sign....");
-	  byte[] msg = mess.getBytes(StandardCharsets.UTF_8);
-	  for (int i = 0; i < numberOfKeys; i++) {
-		NativeSecp256k1.sign1j(secrets[i], signers[i], msg, aggregate_vss_signatures, session, cache);
-	  }
+        for (int i = 0; i < threshold; i++) {
+            NativeSecp256k1.signRound1Receive(participantIndices, secrets[i], signers, msg, session, cache, i);
+        }
 
-	  System.out.println("Broadcasting partial signs...");
-	  for (int i = 0; i < threshold; i++) {
-		NativeSecp256k1.sign2j(new int[]{1, 2, 3}, secrets[i], signers, msg, session, cache, i);
-	  }
+        byte[] frostSig = NativeSecp256k1.aggregateFrostSignature(signers, session, aggregatorIndex);
+        byte[] aggregated_public_key = NativeSecp256k1.getAggregatedPublicKey(signers);
 
-	  System.out.println("SA aggregating signatures....");
-	  byte[] frostSig = NativeSecp256k1.sign3j(aggregate_vss_signatures, signers, session);
-	  prnt(frostSig);
+        boolean good = NativeSecp256k1.frostVerify(frostSig, msg, aggregated_public_key);
+        assertTrue(good);
 
-	  prnt(frostSig);
+    }
 
-	  boolean good = NativeSecp256k1.frostVerify(frostSig, msg, aggregated_public_key);
-	  System.out.println("####### VERIFY: " + good);
-	  System.out.println("JAVA DONE");
-	  assertTrue(good);
-
-	}
-
-	void prnt(byte[] arr) {
-		for (byte b : arr){
-			System.out.print(String.format("%02x", b) + ", ");
-		}
-		System.out.println();
-	}
+    void prnt(byte[] arr) {
+        for (byte b : arr) {
+            System.out.print(String.format("%02x", b) + ", ");
+        }
+        System.out.println();
+    }
 }
