@@ -550,20 +550,6 @@ public class ECKeyTest {
 	  final int numberOfKeys = 5;
 	  int threshold = 3;
 	  byte[][] publicKeys = new byte[numberOfKeys][];
-//		byte[][] privateKeys = new byte[numberOfKeys][];
-
-//        for(int i = 0; i < numberOfKeys; i++){
-//		 	FrostSigner sig = new FrostSigner(3);
-//		  	FrostSecret sec;
-//            byte[][] keys = NativeSecp256k1.generateKeyPair();
-//		  	System.out.println("Private Key " + i);
-//            System.out.println(Arrays.toString(keys[0]));
-//		  	System.out.println("Public Key " + i);
-//            System.out.println(Arrays.toString(keys[1]));
-//			privateKeys[i] = keys[0];
-//			publicKeys[i] = keys[1];
-//		  	System.out.println("............");
-//        }
 
 	  FrostSigner[] signers = new FrostSigner[numberOfKeys];
 	  FrostSecret[] secrets = new FrostSecret[numberOfKeys];
@@ -572,6 +558,7 @@ public class ECKeyTest {
 		secrets[i] = new FrostSecret();
 	  }
 
+	  byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
 	  for (int i = 0; i < numberOfKeys; i++) {
 		FrostSigner sig = signers[i];
 		FrostSecret sec = secrets[i];
@@ -583,17 +570,11 @@ public class ECKeyTest {
 		publicKeys[i] = sig.pubkey;
 		System.out.println();
 	  }
-	  byte[] aggregated_public_key = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
-	  System.out.println("Aggregated key");
-	  prnt(aggregated_public_key);
 	  System.out.println("ok");
 
-	  byte[][][] shares = new byte[numberOfKeys][numberOfKeys][];
-	  byte[][][] pubcoeffs = new byte[numberOfKeys][3][];
 	  System.out.println("COMMITMENTS-----");
 	  for (int i = 0; i < numberOfKeys; i++) {
 		byte[][] res = NativeSecp256k1.sendShares(publicKeys, secrets[i], signers[i]);
-		pubcoeffs[i] = signers[i].pubcoeff;
 		shares[0][i] = res[0];
 		shares[1][i] = res[1];
 		shares[2][i] = res[2];
@@ -606,25 +587,26 @@ public class ECKeyTest {
 	  }
 
 	  System.out.println("AGGREGATE COMMITMENTS");
-	  for (int i = 0; i < numberOfKeys; i++) {
-		NativeSecp256k1.receiveFrost(shares[i], secrets[i], signers, i);
-		prnt(secrets[i].agg_share);
-	  }
 	  FrostCache cache = new FrostCache();
 	  FrostSession session = new FrostSession();
 	  System.out.println("Send vss shares....");
 	  for (int i = 0; i < numberOfKeys; i++) {
+		// todo combine these 2
+		NativeSecp256k1.receiveFrost(shares[i], secrets[i], signers, i);
 		NativeSecp256k1.send_vss_signatures(secrets[i], signers, session, cache, i);
 	  }
+
 	  System.out.println("Receive vss shares....");
 	  for (int i = 0; i < numberOfKeys; i++) {
 		NativeSecp256k1.receive_vss_signatures(signers[i], session, cache);
 	  }
 	  System.out.println("Aggregate vss shares:");
-	  byte[] aggregate_vss_signatures = NativeSecp256k1.aggregate_vss_signatures(signers, session);
-	  prnt(aggregate_vss_signatures);
 
+	  // todo combine these 3
+	  byte[] aggregate_vss_signatures = NativeSecp256k1.aggregate_vss_signatures(signers, session);
+	  byte[] aggregated_public_key = NativeSecp256k1.getAggregatedPublicKey(publicKeys, numberOfKeys);
 	  boolean ok = NativeSecp256k1.verifyVSS(aggregate_vss_signatures, signers[0], aggregated_public_key);
+
 	  System.out.println("VERIFICATION IS " + ok);
 
 	  System.out.println("Signing with Frost....");
@@ -655,6 +637,7 @@ public class ECKeyTest {
 	  assertTrue(good);
 
 	}
+
 	void prnt(byte[] arr) {
 		for (byte b : arr){
 			System.out.print(String.format("%02x", b) + ", ");
