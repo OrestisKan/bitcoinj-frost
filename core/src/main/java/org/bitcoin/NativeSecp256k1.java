@@ -22,9 +22,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import java.math.BigInteger;
+
 import com.google.common.base.Preconditions;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import static org.bitcoin.NativeSecp256k1Util.*;
 
 /**
@@ -49,9 +52,9 @@ public class NativeSecp256k1 {
      * Verifies the given secp256k1 signature in native code. Calling when enabled == false is undefined (probably
      * library not loaded)
      *
-     * @param data The data which was signed, must be exactly 32 bytes
+     * @param data      The data which was signed, must be exactly 32 bytes
      * @param signature The signature
-     * @param pub The public key which did the signing
+     * @param pub       The public key which did the signing
      * @return true if correct signature
      * @throws AssertFailException never thrown?
      */
@@ -81,7 +84,7 @@ public class NativeSecp256k1 {
      * libsecp256k1 Create an ECDSA signature.
      *
      * @param data Message hash, 32 bytes
-     * @param sec Secret key, 32 bytes
+     * @param sec  Secret key, 32 bytes
      * @return sig byte array of signature
      * @throws AssertFailException on bad signature length
      */
@@ -108,8 +111,8 @@ public class NativeSecp256k1 {
         }
 
         byte[] sigArr = retByteArray[0];
-        int sigLen = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
-        int retVal = new BigInteger(new byte[] { retByteArray[1][1] }).intValue();
+        int sigLen = new BigInteger(new byte[]{retByteArray[1][0]}).intValue();
+        int retVal = new BigInteger(new byte[]{retByteArray[1][1]}).intValue();
 
         assertEquals(sigArr.length, sigLen, "Got bad signature length.");
 
@@ -172,8 +175,8 @@ public class NativeSecp256k1 {
         }
 
         byte[] pubArr = retByteArray[0];
-        int pubLen = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
-        int retVal = new BigInteger(new byte[] { retByteArray[1][1] }).intValue();
+        int pubLen = new BigInteger(new byte[]{retByteArray[1][0]}).intValue();
+        int retVal = new BigInteger(new byte[]{retByteArray[1][1]}).intValue();
 
         assertEquals(pubArr.length, pubLen, "Got bad pubkey length.");
 
@@ -210,7 +213,7 @@ public class NativeSecp256k1 {
     /**
      * libsecp256k1 PrivKey Tweak-Mul - Tweak privkey by multiplying to it
      *
-     * @param tweak some bytes to tweak with
+     * @param tweak   some bytes to tweak with
      * @param privkey 32-byte seckey
      * @return The tweaked private key
      * @throws AssertFailException assertion failure
@@ -238,8 +241,8 @@ public class NativeSecp256k1 {
 
         byte[] privArr = retByteArray[0];
 
-        int privLen = (byte) new BigInteger(new byte[] { retByteArray[1][0] }).intValue() & 0xFF;
-        int retVal = new BigInteger(new byte[] { retByteArray[1][1] }).intValue();
+        int privLen = (byte) new BigInteger(new byte[]{retByteArray[1][0]}).intValue() & 0xFF;
+        int retVal = new BigInteger(new byte[]{retByteArray[1][1]}).intValue();
 
         assertEquals(privArr.length, privLen, "Got bad pubkey length.");
 
@@ -251,7 +254,7 @@ public class NativeSecp256k1 {
     /**
      * libsecp256k1 PrivKey Tweak-Add - Tweak privkey by adding to it
      *
-     * @param tweak some bytes to tweak with
+     * @param tweak   some bytes to tweak with
      * @param privkey 32-byte seckey
      * @return The tweaked private key
      * @throws AssertFailException assertion failure
@@ -279,8 +282,8 @@ public class NativeSecp256k1 {
 
         byte[] privArr = retByteArray[0];
 
-        int privLen = (byte) new BigInteger(new byte[] { retByteArray[1][0] }).intValue() & 0xFF;
-        int retVal = new BigInteger(new byte[] { retByteArray[1][1] }).intValue();
+        int privLen = (byte) new BigInteger(new byte[]{retByteArray[1][0]}).intValue() & 0xFF;
+        int retVal = new BigInteger(new byte[]{retByteArray[1][1]}).intValue();
 
         assertEquals(privArr.length, privLen, "Got bad pubkey length.");
 
@@ -292,7 +295,7 @@ public class NativeSecp256k1 {
     /**
      * libsecp256k1 PubKey Tweak-Add - Tweak pubkey by adding to it
      *
-     * @param tweak some bytes to tweak with
+     * @param tweak  some bytes to tweak with
      * @param pubkey 32-byte seckey
      * @return The tweaked private key
      * @throws AssertFailException assertion failure
@@ -320,8 +323,8 @@ public class NativeSecp256k1 {
 
         byte[] pubArr = retByteArray[0];
 
-        int pubLen = (byte) new BigInteger(new byte[] { retByteArray[1][0] }).intValue() & 0xFF;
-        int retVal = new BigInteger(new byte[] { retByteArray[1][1] }).intValue();
+        int pubLen = (byte) new BigInteger(new byte[]{retByteArray[1][0]}).intValue() & 0xFF;
+        int retVal = new BigInteger(new byte[]{retByteArray[1][1]}).intValue();
 
         assertEquals(pubArr.length, pubLen, "Got bad pubkey length.");
 
@@ -333,7 +336,7 @@ public class NativeSecp256k1 {
     /**
      * libsecp256k1 PubKey Tweak-Mul - Tweak pubkey by multiplying to it
      *
-     * @param tweak some bytes to tweak with
+     * @param tweak  some bytes to tweak with
      * @param pubkey 32-byte seckey
      * @return The tweaked private key
      * @throws AssertFailException assertion failure
@@ -361,8 +364,8 @@ public class NativeSecp256k1 {
 
         byte[] pubArr = retByteArray[0];
 
-        int pubLen = (byte) new BigInteger(new byte[] { retByteArray[1][0] }).intValue() & 0xFF;
-        int retVal = new BigInteger(new byte[] { retByteArray[1][1] }).intValue();
+        int pubLen = (byte) new BigInteger(new byte[]{retByteArray[1][0]}).intValue() & 0xFF;
+        int retVal = new BigInteger(new byte[]{retByteArray[1][1]}).intValue();
 
         assertEquals(pubArr.length, pubLen, "Got bad pubkey length.");
 
@@ -401,7 +404,7 @@ public class NativeSecp256k1 {
         }
 
         byte[] resArr = retByteArray[0];
-        int retVal = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
+        int retVal = new BigInteger(new byte[]{retByteArray[1][0]}).intValue();
 
         assertEquals(resArr.length, 32, "Got bad result length.");
         assertEquals(retVal, 1, "Failed return value check.");
@@ -416,7 +419,7 @@ public class NativeSecp256k1 {
      * @return true if successful, false otherwise
      * @throws AssertFailException never thrown?
      */
-    public static synchronized boolean randomize(byte[] seed) throws AssertFailException  {
+    public static synchronized boolean randomize(byte[] seed) throws AssertFailException {
         Preconditions.checkArgument(seed.length == 32 || seed == null);
 
         ByteBuffer byteBuff = nativeECDSABuffer.get();
@@ -438,7 +441,7 @@ public class NativeSecp256k1 {
 
     /**
      * @param data data to sign
-     * @param sec secret key
+     * @param sec  secret key
      * @return Signature or byte[0]
      * @throws AssertFailException assertion failure
      */
@@ -465,64 +468,91 @@ public class NativeSecp256k1 {
         }
 
         byte[] sigArr = retByteArray[0];
-        int retVal = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
+        int retVal = new BigInteger(new byte[]{retByteArray[1][0]}).intValue();
 
         assertEquals(sigArr.length, 64, "Got bad signature length.");
 
         return retVal == 0 ? new byte[0] : sigArr;
     }
 
-    public static byte[][] generateKeyPair(){
+    public static byte[][] generateKeyPair() {
         return generate_key_pair(Secp256k1Context.getContext());
     }
 
-	public static void generateKey(FrostSecret secret, FrostSigner signer){
-	   generate_key(secret, signer, Secp256k1Context.getContext());
-	}
+    public static void generateKey(FrostSecret secret, FrostSigner signer) {
+        generate_key(secret, signer, Secp256k1Context.getContext());
+    }
 
-  	public static byte[] getAggregatedPublicKey(byte[][] publicKeys , int totalNumberOfPublicKeys){
-		return get_combined_public_keys(publicKeys, totalNumberOfPublicKeys, Secp256k1Context.getContext());
-  	}
+    public static byte[] getAggregatedPublicKey(FrostSigner[] signers) {
+        byte[][] publicKeys = new byte[signers.length][];
+        for(int i =0; i<signers.length; i++)
+            publicKeys[i] = signers[i].pubkey;
+        return get_combined_public_keys(publicKeys, publicKeys.length, Secp256k1Context.getContext());
+    }
 
-  	public static void send_vss_signatures(FrostSecret secret, FrostSigner[] signers, FrostSession session, FrostCache cache, int index){
-	  send_vss_sign(secret, signers, session, cache, index, Secp256k1Context.getContext());
-	}
-	public static void receive_vss_signatures(FrostSigner signer, FrostSession session, FrostCache cache){
-	  receive_vss_sign(signer, session, cache, Secp256k1Context.getContext());
-	}
+    public static void keyGenRound2Send(FrostSecret secret, FrostSigner[] signers, FrostSession session, FrostCache cache, int index) {
+        send_vss_sign(secret, signers, session, cache, index, Secp256k1Context.getContext());
+    }
 
-  	public static byte[] aggregate_vss_signatures(FrostSigner[] signers, FrostSession session){
-	  return aggregate_vss_sign(signers, session, Secp256k1Context.getContext());
-   }
+    public static void keyGenRound2Receive(FrostSigner signer, FrostSession session, FrostCache cache) {
+        receive_vss_sign(signer, session, cache, Secp256k1Context.getContext());
+    }
 
-  public static byte[][] sendShares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer){
-	return send_shares(publicKeys, secret, signer, Secp256k1Context.getContext());
+    public static byte[] aggregate_vss_signatures(FrostSigner[] signers, FrostSession session) {
+        return aggregate_vss_sign(signers, session, Secp256k1Context.getContext());
+    }
 
-  }
-  public static boolean verifyVSS(byte[] signature, FrostSigner aggr_signer, byte[] aggr_key){
-	return verify_vss_sign(signature, aggr_signer, aggr_key, Secp256k1Context.getContext());
+    public static void keyGenRound1Send(FrostSigner[] signers, FrostSecret secret, FrostSigner signer) {
+        byte[][] publicKeys = new byte[signers.length][];
+        for(int i =0; i<signers.length; i++)
+            publicKeys[i] = signers[i].pubkey;
+        send_shares(publicKeys, secret, signer, Secp256k1Context.getContext());
 
-  }
+    }
+
+    public static boolean verifyVSS(byte[] signature, FrostSigner aggr_signer, byte[] aggr_key) {
+        return verify_vss_sign(signature, aggr_signer, aggr_key, Secp256k1Context.getContext());
+
+    }
+
+    private static byte[] aggregateCommitments(FrostSigner[] signers, FrostSession session, int aggregatorIndex) {
+        byte[] aggregate_vss_signatures = NativeSecp256k1.aggregate_vss_signatures(signers, session);
+        byte[] aggregated_public_key = NativeSecp256k1.getAggregatedPublicKey(signers);
+        if (!NativeSecp256k1.verifyVSS(aggregate_vss_signatures, signers[aggregatorIndex], aggregated_public_key)){
+            System.out.println("Commitment Verification Failed!");
+            return null;
+        }
+        return aggregate_vss_signatures;
+    }
+//  public static byte signFrost()
+
+    public static void signRound1Send(FrostSigner[] signers, FrostSecret secret, byte[] msg, FrostSession session, FrostCache cache, int aggregatorIndex) {
+        byte[] sig = aggregateCommitments(signers, session, aggregatorIndex);
+        sign_message_first(secret, signers[aggregatorIndex], msg, sig, session, cache, Secp256k1Context.getContext());
+    }
+
+    public static void signRound1Receive(int[] participants, FrostSecret secret, FrostSigner[] signers, byte[] msg, FrostSession session, FrostCache cache, int index) {
+        sign_message_second(participants, secret, signers, msg, session, cache, index, Secp256k1Context.getContext());
+    }
+
+    public static byte[] aggregateFrostSignature(FrostSigner[] signers, FrostSession session, int aggregatorIndex) {
+        byte[] sig = aggregateCommitments(signers, session, aggregatorIndex);
+        return sign_message_third(sig, signers, session, Secp256k1Context.getContext());
+    }
+
+    public static boolean frostVerify(byte[] sig, byte[] msg, byte[] key) {
+        return verify_frost(sig, msg, key, Secp256k1Context.getContext());
+    }
 
 
-  public static byte[] sign1j(FrostSecret secret, FrostSigner signer, byte[] msg, byte[] sig, FrostSession session, FrostCache cache) {
-	  return sign_message_first(secret, signer, msg, sig, session, cache, Secp256k1Context.getContext());
-  }
-  public static void sign2j(int[] participants, FrostSecret secret, FrostSigner[] signers, byte[] msg, FrostSession session, FrostCache cache, int index) {
-	sign_message_second(participants, secret, signers, msg, session, cache, index, Secp256k1Context.getContext());
-  }
-  public static byte[] sign3j(byte[] sig, FrostSigner[] signers, FrostSession session) {
-	return sign_message_third(sig, signers, session, Secp256k1Context.getContext());
-  }
+    public static void keyGenRound1Receive(FrostSigner[] signers, FrostSecret secret, int index) {
+        byte[][] shares = new byte[signers.length][];
+        for(int i = 0; i < signers.length; i++) {
+            shares[i] = signers[i].partial_sig;
+        }
+        receive_commitments(shares, secret, signers, index, Secp256k1Context.getContext());
+    }
 
-  public static boolean frostVerify(byte[] sig, byte[] msg, byte[] key) {
-	return verify_frost(sig, msg, key, Secp256k1Context.getContext());
-  }
-
-
-	public static void receiveFrost(byte[][] shares, FrostSecret secret, FrostSigner[] signer, int index){
-	  receive_commitments(shares, secret, signer, index, Secp256k1Context.getContext());
-	}
     private static native long secp256k1_ctx_clone(long context);
 
     private static native int secp256k1_context_randomize(ByteBuffer byteBuff, long context);
@@ -535,7 +565,7 @@ public class NativeSecp256k1 {
 
     private static native byte[][] secp256k1_pubkey_tweak_mul(ByteBuffer byteBuff, long context, int pubLen);
 
-      private static native void secp256k1_destroy_context(long context);
+    private static native void secp256k1_destroy_context(long context);
 
     private static native int secp256k1_ecdsa_verify(ByteBuffer byteBuff, long context, int sigLen, int pubLen);
 
@@ -557,22 +587,23 @@ public class NativeSecp256k1 {
 
     private static native byte[] get_combined_public_keys(byte[][] publicKeys, int totalNumberOfPublicKeys, long context);
 
-	private static native byte[][] create_commitments(byte[][] publicKeys, byte[] keyPair, long context);
+    private static native byte[][] send_shares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer, long context);
 
-  	private static native byte[][] send_shares(byte[][] publicKeys, FrostSecret secret, FrostSigner signer, long context);
-
-  	private static native void receive_commitments(byte[][] shares, FrostSecret secret, FrostSigner[] signerS, int index, long context);
+    private static native void receive_commitments(byte[][] shares, FrostSecret secret, FrostSigner[] signerS, int index, long context);
 
     private static native void send_vss_sign(FrostSecret secret, FrostSigner[] signerS, FrostSession session, FrostCache cache, int index, long context);
 
-	private static native void receive_vss_sign(FrostSigner signer, FrostSession session, FrostCache cache, long context);
+    private static native void receive_vss_sign(FrostSigner signer, FrostSession session, FrostCache cache, long context);
 
     private static native byte[] aggregate_vss_sign(FrostSigner[] signerS, FrostSession session, long context);
 
-	private static native boolean verify_vss_sign(byte[] signature, FrostSigner aggr_signer, byte[] aggr_key, long context);
+    private static native boolean verify_vss_sign(byte[] signature, FrostSigner aggr_signer, byte[] aggr_key, long context);
 
-	private static native byte[] sign_message_first(FrostSecret secret, FrostSigner signer, byte[] msg, byte[] sig, FrostSession session, FrostCache cache, long context);
-	private static native void sign_message_second(int[] participants, FrostSecret secret, FrostSigner[] signers, byte[] msg, FrostSession session, FrostCache cache, int index, long context);
-	private static native byte[] sign_message_third(byte[] sig, FrostSigner[] signers, FrostSession session, long context);
-	private static native boolean verify_frost(byte[] sig, byte[] msg, byte[] key, long ctx_l);
+    private static native byte[] sign_message_first(FrostSecret secret, FrostSigner signer, byte[] msg, byte[] sig, FrostSession session, FrostCache cache, long context);
+
+    private static native void sign_message_second(int[] participants, FrostSecret secret, FrostSigner[] signers, byte[] msg, FrostSession session, FrostCache cache, int index, long context);
+
+    private static native byte[] sign_message_third(byte[] sig, FrostSigner[] signers, FrostSession session, long context);
+
+    private static native boolean verify_frost(byte[] sig, byte[] msg, byte[] key, long ctx_l);
 }
